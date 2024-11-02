@@ -31,6 +31,41 @@ app.get('/api/courses', async (req, res) => {
     }
 });
 
+// New route for searching courses
+app.get("/api/search", async (req, res) => {
+    const searchQuery = req.query.query;
+  
+    if (!searchQuery) {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+  
+    try {
+      await client.connect();
+      const database = client.db("vues");
+      const collection = database.collection("courses");
+  
+      // Full-text search on multiple fields
+      const results = await collection
+        .find({
+          $or: [
+            { location: { $regex: searchQuery, $options: "i" } },
+            { category: { $regex: searchQuery, $options: "i" } },
+            { subject: { $regex: searchQuery, $options: "i" } },
+          ],
+        })
+        .toArray();
+  
+      res.json(results);
+    } catch (error) {
+      console.error("Error performing search:", error);
+      res.status(500).send("Error performing search");
+    } finally {
+      await client.close();
+    }
+  });
+  
+
+
 // New route for placing orders
 app.post('/api/orders', async (req, res) => {
     try {
