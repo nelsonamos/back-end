@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -92,6 +92,43 @@ app.post('/api/orders', async (req, res) => {
         res.status(500).send('Error placing order');
     }
 });
+
+app.put('/api/courses/:id/decrement', async (req, res) => {
+    const courseId = req.params.id;
+    const { spacesToReduce } = req.body;
+
+    if (!spacesToReduce || spacesToReduce < 1) {
+        return res.status(400).send('Invalid spaces to reduce');
+    }
+
+    try {
+        // Check if the courseId is valid
+        if (!ObjectId.isValid(courseId)) {
+            return res.status(400).send('Invalid course ID');
+        }
+
+        const objectId = new ObjectId(courseId); // Convert courseId to ObjectId
+
+        const database = client.db('vues');
+        const collection = database.collection('courses');
+
+        // Decrease the space by the number of spaces to reduce
+        const result = await collection.updateOne(
+            { _id: objectId },
+            { $inc: { space: -spacesToReduce } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.status(200).send('Space updated successfully');
+        } else {
+            res.status(404).send('Course not found or no space to decrement');
+        }
+    } catch (error) {
+        console.error('Error updating available spaces:', error);
+        res.status(500).send('Error updating available spaces');
+    }
+});
+
 
 // Start the server
 app.listen(3000, () => {
