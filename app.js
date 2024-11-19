@@ -7,6 +7,7 @@ const logger = require('./logger');
 
 const app = express();
 app.set('trust proxy', true);
+app.use(express.static('Front-End'));
 app.use(logger);
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
