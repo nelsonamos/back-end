@@ -7,7 +7,7 @@ const logger = require('./logger');
 
 const app = express();
 app.set('trust proxy', true);
-app.use(express.static('Front-End'));
+app.use(express.static('../Front-End'));
 app.use(logger);
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
@@ -15,6 +15,10 @@ app.use('/middleware_pix/lesson', express.static(path.join(__dirname, '/middlewa
 app.use('/images', (req, res) => {
     res.status(404).send('Image not found');
 });
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../Front-End', 'index.html'));
+  });
 
 const uri = 'mongodb+srv://user:user@cluster0.cyzu5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
